@@ -1,11 +1,11 @@
-
 import streamlit as st
-import pickle
 import pandas as pd
+import pickle
+import time
 
-# -----------------------------
-# PAGE CONFIG (MUST BE FIRST)
-# -----------------------------
+# ---------------------------------
+# PAGE CONFIG
+# ---------------------------------
 
 st.set_page_config(
     page_title="IPL Winner Prediction",
@@ -14,102 +14,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# -----------------------------
-# CUSTOM CSS
-# -----------------------------
+# ---------------------------------
+# LOAD CSS
+# ---------------------------------
 
-st.markdown("""
-<style>
+def load_css():
+    with open("style.css") as f:
+        st.markdown(
+            f"<style>{f.read()}</style>",
+            unsafe_allow_html=True
+        )
 
-#MainMenu {visibility:hidden;}
-footer {visibility:hidden;}
-header {visibility:hidden;}
+load_css()
 
-.main{
-    background-color:#0E1117;
-}
-
-h1{
-    text-align:center;
-    color:white;
-    font-size:50px;
-}
-
-h4{
-    text-align:center;
-    color:#B0B3B8;
-}
-
-div.stButton > button:first-child{
-    background:linear-gradient(90deg,#FF512F,#DD2476);
-    color:white;
-    height:55px;
-    width:100%;
-    border-radius:12px;
-    font-size:22px;
-    font-weight:bold;
-    border:none;
-}
-
-[data-testid="metric-container"]{
-    background-color:#1A1D24;
-    border-radius:12px;
-    padding:15px;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# -----------------------------
-# LOAD MODEL
-# -----------------------------
-
-pipe = pickle.load(open("models/model.pkl","rb"))
-
-# -----------------------------
-# SIDEBAR
-# -----------------------------
-
-st.sidebar.title("🏏 IPL Winner Prediction")
-
-st.sidebar.markdown("---")
-
-st.sidebar.success("""
-### Machine Learning Project
-
-Algorithm
-- Logistic Regression
-
-Accuracy
-- 80.27%
-
-Tech Stack
-- Python
-- Pandas
-- Scikit-Learn
-- Streamlit
-""")
-
-st.sidebar.markdown("---")
-
-st.sidebar.info("""
-Developer
-
-👨‍💻 Surya
-""")
-
-# -----------------------------
-# HEADER
-# -----------------------------
-
-st.markdown("""
-<h1>🏏 IPL Winner Prediction</h1>
-<h4>AI Powered Live Match Predictor</h4>
-""", unsafe_allow_html=True)
-
-# -----------------------------
-# TEAMS
-# -----------------------------
+# ---------------------------------
+# TEAMS & LOGOS
+# ---------------------------------
 
 teams = [
     "Chennai Super Kings",
@@ -122,77 +42,190 @@ teams = [
     "Sunrisers Hyderabad"
 ]
 
-# -----------------------------
-# INPUT
-# -----------------------------
+logos = {
+    "Chennai Super Kings": "assets/csk.png",
+    "Mumbai Indians": "assets/mi.png",
+    "Royal Challengers Bangalore": "assets/rcb.png",
+    "Kolkata Knight Riders": "assets/kkr.png",
+    "Delhi Capitals": "assets/dc.png",
+    "Punjab Kings": "assets/pbks.png",
+    "Rajasthan Royals": "assets/rr.png",
+    "Sunrisers Hyderabad": "assets/srh.png"
+}
 
-col1,col2 = st.columns(2)
+# ---------------------------------
+# LOAD MODEL
+# ---------------------------------
+
+pipe = pickle.load(
+    open(
+        "models/model.pkl",
+        "rb"
+    )
+)
+
+
+
+
+
+
+# ---------------------------------
+# HERO SECTION
+# ---------------------------------
+
+st.markdown(
+"""
+<div class="hero">
+
+<h1>
+🏏 IPL Winner Prediction
+</h1>
+
+<h3>
+AI Powered Live Match Predictor
+</h3>
+
+</div>
+""",
+unsafe_allow_html=True
+)
+
+st.markdown("---")
+
+#---------------------------------
+# TEAM SELECTION
+# ---------------------------------
+
+col1, col2 = st.columns(2)
 
 with col1:
+
     batting_team = st.selectbox(
-        "Batting Team",
+        "🏏 Batting Team",
         sorted(teams)
     )
 
 with col2:
+
     bowling_team = st.selectbox(
-        "Bowling Team",
+        "🎯 Bowling Team",
         sorted(teams)
     )
 
-col3,col4 = st.columns(2)
+# ---------------------------------
+# TEAM LOGOS DISPLAY
+# ---------------------------------
 
-with col3:
+logo1, logo2 = st.columns(2)
+
+with logo1:
+
+    st.image(
+        logos[batting_team],
+        width=160
+    )
+
+with logo2:
+
+    st.image(
+        logos[bowling_team],
+        width=160
+    )
+
+st.markdown("---")
+
+
+# ---------------------------------
+# MATCH INPUTS
+# ---------------------------------
+
+st.markdown(
+"""
+<div class="card">
+<h2>📊 Match Details</h2>
+</div>
+""",
+unsafe_allow_html=True
+)
+
+c1, c2 = st.columns(2)
+
+with c1:
+
     target = st.number_input(
-        "Target Score",
-        min_value=1
+        "🎯 Target Score",
+        min_value=1,
+        step=1
     )
 
-with col4:
+with c2:
+
     score = st.number_input(
-        "Current Score",
-        min_value=0
+        "🏏 Current Score",
+        min_value=0,
+        step=1
     )
 
-col5,col6 = st.columns(2)
+c3, c4 = st.columns(2)
 
-with col5:
+with c3:
+
     overs = st.number_input(
-        "Overs Completed",
+        "⏱ Overs Completed",
         min_value=0.0,
         max_value=20.0,
         step=0.1
     )
 
-with col6:
+with c4:
+
     wickets = st.number_input(
-        "Wickets Out",
+        "❌ Wickets Out",
         min_value=0,
-        max_value=10
+        max_value=10,
+        step=1
     )
 
-# -----------------------------
-# PREDICTION
-# -----------------------------
+st.markdown("---")
 
-if st.button("🔮 Predict Probability"):
+# ---------------------------------
+# PREDICT BUTTON
+# ---------------------------------
+
+predict = st.button(
+    "🔮 Predict Winner"
+)
+
+st.markdown("---")
+
+# ---------------------------------
+# MODEL PREDICTION
+# ---------------------------------
+
+if predict:
 
     if batting_team == bowling_team:
-        st.error("Both teams cannot be the same.")
+        st.error(
+            "Batting Team and Bowling Team cannot be the same."
+        )
         st.stop()
 
     if score > target:
-        st.error("Current score cannot exceed target.")
+        st.error(
+            "Current Score cannot be greater than Target."
+        )
         st.stop()
 
     over = int(overs)
-    ball = int((overs-over)*10)
+    ball = int((overs - over) * 10)
 
     if ball > 5:
-        st.error("Use overs like 15.3")
+        st.error(
+            "Use overs like 15.3"
+        )
         st.stop()
 
-    balls_bowled = over*6 + ball
+    balls_bowled = over * 6 + ball
     balls_left = 120 - balls_bowled
 
     runs_left = target - score
@@ -206,86 +239,174 @@ if st.button("🔮 Predict Probability"):
     if balls_left == 0:
         required_run_rate = 0
     else:
-        required_run_rate = (runs_left*6)/balls_left
+        required_run_rate = (
+            runs_left * 6
+        ) / balls_left
 
     input_df = pd.DataFrame({
-        'batting_team':[batting_team],
-        'bowling_team':[bowling_team],
-        'runs_left':[runs_left],
-        'balls_left':[balls_left],
-        'wickets_left':[wickets_left],
-        'target':[target],
-        'current_run_rate':[current_run_rate],
-        'required_run_rate':[required_run_rate]
+
+        "batting_team":[batting_team],
+        "bowling_team":[bowling_team],
+        "runs_left":[runs_left],
+        "balls_left":[balls_left],
+        "wickets_left":[wickets_left],
+        "target":[target],
+        "current_run_rate":[current_run_rate],
+        "required_run_rate":[required_run_rate]
+
     })
 
-    result = pipe.predict_proba(input_df)
+    result = pipe.predict_proba(
+        input_df
+    )
 
     loss = result[0][0]
     win = result[0][1]
 
-    st.balloons()
+    # -----------------------------
+    # MATCH DASHBOARD
+    # -----------------------------
 
-    st.success("Prediction Completed!")
 
-    st.divider()
+    st.markdown(
+    """
+    <div class='card'>
+    <h2>📊 Match Situation</h2>
+    </div>
+    """,
+    unsafe_allow_html=True
+    )
 
-    st.subheader("📊 Match Situation")
+    m1,m2,m3,m4,m5=st.columns(5)
 
-    a,b,c = st.columns(3)
+    m1.metric(
+        "🎯 Target",
+        target
+    )
 
-    with a:
-        st.metric("Target",target)
+    m2.metric(
+        "🏏 Score",
+        f"{score}/{wickets}"
+    )
 
-    with b:
-        st.metric("Score",f"{score}/{wickets}")
+    m3.metric(
+        "⏱ Overs",
+        overs
+    )
 
-    with c:
-        st.metric("Overs",overs)
+    m4.metric(
+        "🔥 Runs Left",
+        runs_left
+    )
 
-    d,e = st.columns(2)
+    m5.metric(
+        "⚡ Balls Left",
+        balls_left
+    )
 
-    with d:
-        st.metric("Runs Left",runs_left)
+            
 
-    with e:
-        st.metric("Balls Left",balls_left)
+    st.markdown("---")
 
-    st.divider()
+        # -----------------------------
+        # WIN PROBABILITY
+        # -----------------------------
 
-    st.subheader("🏆 Winning Probability")
+    st.markdown(
+        """
+        <div class='card'>
+        <h2>🏆 Winning Probability</h2>
+        </div>
+        """,
+        unsafe_allow_html=True
+        )
 
-    x,y = st.columns(2)
+    p1,p2 = st.columns(2)
 
-    with x:
+    with p1:
 
-        st.markdown(f"### 🔥 {batting_team}")
+        st.image(
+            logos[batting_team],
+            width=100
+        )
 
-        st.progress(win)
+        st.markdown(
+            f"## {batting_team}"
+        )
+
+        st.progress(
+            float(win)
+        )
 
         st.metric(
             "Winning Chance",
             f"{round(win*100,2)}%"
         )
 
-    with y:
+    with p2:
 
-        st.markdown(f"### ⚔️ {bowling_team}")
+        st.image(
+            logos[bowling_team],
+            width=100
+        )
 
-        st.progress(loss)
+        st.markdown(
+            f"## {bowling_team}"
+        )
+
+        st.progress(
+            float(loss)
+        )
 
         st.metric(
             "Winning Chance",
             f"{round(loss*100,2)}%"
         )
 
-st.divider()
+    st.markdown("---")
+
+    st.markdown(
+        """
+    <h1 style='text-align:center'>
+    🏆
+    </h1>
+    """,
+        unsafe_allow_html=True
+    )
+
+    # -----------------------------
+    # EXTRA INFO
+    # -----------------------------
+
+    st.info(
+        f"""
+    Current Run Rate : {round(current_run_rate,2)}
+
+    Required Run Rate : {round(required_run_rate,2)}
+    """
+    )
+
+
+st.markdown("---")
+
+# ---------------------------------
+# FOOTER
+# ---------------------------------
+st.markdown("---")
 
 st.markdown(
 """
-<div style='text-align:center;'>
+<div style="text-align:center;padding:20px">
 
-⭐ Built with Python, Pandas, Scikit-Learn & Streamlit
+<h2>🏏 IPL Winner Prediction</h2>
+
+Machine Learning Based Live Match Predictor
+
+<br>
+
+⭐ Built with Python | Pandas | Scikit-Learn | Streamlit
+
+<br>
 
 👨‍💻 Developed by <b>Surya</b>
 
