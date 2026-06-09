@@ -1,20 +1,16 @@
-import os
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
-
-print("Current Directory:")
-print(os.getcwd())
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 
 final_df = pd.read_csv("data/final_df.csv")
 
 X = final_df.drop('result', axis=1)
 y = final_df['result']
-
-print("\nX Shape :", X.shape)
-print("y Shape :", y.shape)
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -28,7 +24,6 @@ trf = ColumnTransformer(
         (
             'trf',
             OneHotEncoder(
-                sparse_output=False,
                 handle_unknown='ignore'
             ),
             ['batting_team', 'bowling_team']
@@ -37,14 +32,14 @@ trf = ColumnTransformer(
     remainder='passthrough'
 )
 
-trf.fit(X_train)
+pipe = Pipeline([
+    ('step1', trf),
+    ('step2', LogisticRegression())
+])
 
-encoded_data = trf.transform(X_train)
+pipe.fit(X_train, y_train)
 
-print(encoded_data.shape)
+y_pred = pipe.predict(X_test)
 
-print("\nTraining Data")
-print(X_train.shape)
-
-print("\nTesting Data")
-print(X_test.shape)
+print("Accuracy:")
+print(accuracy_score(y_test, y_pred))
