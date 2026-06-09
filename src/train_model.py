@@ -1,4 +1,5 @@
 import pandas as pd
+import pickle
 
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
@@ -43,3 +44,10 @@ y_pred = pipe.predict(X_test)
 
 print("Accuracy:")
 print(accuracy_score(y_test, y_pred))
+
+pickle.dump(
+    pipe,
+    open('models/model.pkl', 'wb')
+)
+
+print("Model Saved Successfully!")
