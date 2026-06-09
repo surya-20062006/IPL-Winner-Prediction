@@ -20,3 +20,7 @@
 ## Run
 
 python -m streamlit run app.py
+
+## Live Demo
+
+https://ipl-winner-prediction-2pacy9io2wfgkwg9x4quws.streamlit.app/
