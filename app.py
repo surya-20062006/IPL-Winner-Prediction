@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import pickle
 import time
+import base64
 
 # ---------------------------------
 # PAGE CONFIG
@@ -18,10 +19,21 @@ st.set_page_config(
 # LOAD CSS
 # ---------------------------------
 
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
 def load_css():
+    try:
+        img_base64 = get_base64_of_bin_file("assets/stadium.jpg")
+    except Exception:
+        img_base64 = ""
+        
     with open("style.css") as f:
+        css = f.read().replace('url("assets/stadium.jpg")', f'url("data:image/jpeg;base64,{img_base64}")')
         st.markdown(
-            f"<style>{f.read()}</style>",
+            f"<style>{css}</style>",
             unsafe_allow_html=True
         )
 
